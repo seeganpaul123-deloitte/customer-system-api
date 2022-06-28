@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd">
+	<flow name="post-loan-details" doc:id="dcecfd2a-d575-45c5-9b0c-758587abd34b" >
+		<ee:transform doc:name="Transform Message" doc:id="5a0daf70-5458-42ae-82d2-0a5e4a4423e6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="loan-details" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<snowflake:select doc:name="Select" doc:id="6f7bd0e6-ede9-4b33-819d-c210527624bb" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[select INCOME from "LOAN_APPLICATION"."PUBLIC"."CUSTOMER_REGISTRATION" where USERID = :userId
+]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	userId: vars."loan-details".USER_ID
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<ee:transform doc:name="Transform Message" doc:id="8e2f3dc0-24ba-44b4-9da0-591c27d22b99" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="income" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<snowflake:select doc:name="Select" doc:id="c5527093-cf66-4a4c-a00d-11c72cc7be55" config-ref="Snowflake_Config1" >
+			<snowflake:sql ><![CDATA[${sql3.query}]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	user_id: vars."loan-details".USER_ID
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<choice doc:name="Choice" doc:id="54a17053-aae3-4af5-8e41-34189e0a771d" >
+			<when expression="#[payload[0].USERID != null]">
+				<snowflake:select doc:name="Select" doc:id="f573ab87-e6d2-43cf-88fb-7f6de721571b" config-ref="Snowflake_Config1" >
+					<snowflake:sql ><![CDATA[select STATUS from "LOAN_APPLICATION"."PUBLIC"."LOAN_STATUS" where USERID = :userId order by LOAN_ID desc limit 1]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{
+	userId: vars."loan-details".USER_ID
+}]]]></snowflake:input-parameters>
+				</snowflake:select>
+				<choice doc:name="Choice" doc:id="48f03a20-13a9-423a-aea1-291e6e3b4f4f">
+					<when expression='#[payload[0].STATUS == "Under Process"]'>
+						<ee:transform doc:name="Transform Message" doc:id="d270aec2-b6d3-4c93-a33e-3fcb4c695212" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Your Previous loan is still under process!"
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="8fa8d16f-53d2-4390-abc1-a5ea4f35fa79">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "USER_ID": vars."loan-details".USER_ID,
+  "Email": vars."loan-details".Email,
+  "Loan_Amount": vars."loan-details".Loan_Amount,
+  "Tenure": vars."loan-details".Tenure,
+  "Interest": vars."loan-details".Interest,
+  "Type": vars."loan-details".Type
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+						<snowflake:insert doc:name="Insert" doc:id="9203b4a4-195e-4f2b-b9a4-6320dfaa84c4" config-ref="Snowflake_Config1">
+			<snowflake:sql><![CDATA[${sql1.query}]]></snowflake:sql>
+			<snowflake:input-parameters><![CDATA[#[{
+userid: payload.USER_ID,
+email: payload.Email,
+loan_amount: payload.Loan_Amount,
+tenure: payload.Tenure,
+interest: payload.Interest,
+types: payload.Type
+}]]]></snowflake:input-parameters>
+		</snowflake:insert>
+						<flow-ref doc:name="Flow Reference" doc:id="6dea847a-b1f2-41a4-a34c-20cea263c349" name="send-loan-details-queue" />
+						<snowflake:select doc:name="Select" doc:id="fe618fb0-7e1f-4bb2-bea3-7e9a57b3aa3a" config-ref="Snowflake_Config1" >
+							<snowflake:sql ><![CDATA[select * from "LOAN_APPLICATION"."PUBLIC"."LOAN_DETAIL"
+order by LOAN_ID desc
+limit 1]]></snowflake:sql>
+						</snowflake:select>
+						<logger level="INFO" doc:name="Logger" doc:id="96b74308-2094-44c9-9347-8f3f3a1a6ea9" message="#[payload[0].LOAN_ID]"/>
+						<ee:transform doc:name="Transform Message" doc:id="4b7743b3-06e2-451c-9636-4242f5bc3c00">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	loan_id: payload[0].LOAN_ID,
+	message: "Loan details updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="9701b780-2de4-422a-bd75-adfcd5fb2c7f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "user is not registered"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="send-loan-details-queue" doc:id="477e98b4-7540-43e2-8036-8e304c9720d5" >
+		<snowflake:select doc:name="Select" doc:id="7a023084-7c9f-4bcd-9ff9-5249f69f259d" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[select * from "LOAN_APPLICATION"."PUBLIC"."LOAN_DETAIL"
+order by LOAN_ID desc
+limit 1]]></snowflake:sql>
+		</snowflake:select>
+		<ee:transform doc:name="Transform Message" doc:id="61bee23c-185d-4437-a1f9-0ac99c5706aa" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="loan-details" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "INTEREST": payload[0].INTERSET,
+    "LOAN_AMOUNT": payload[0].LOAN_AMOUNT,
+    "TYPE": payload[0].TYPE,
+   	"USERID": payload[0].USERID,
+    "EMAIL": payload[0].EMAIL,
+    "TENURE": payload[0].TENURE,
+    "LOAN_ID": payload[0].LOAN_ID
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<snowflake:select doc:name="Select" doc:id="24b43b3e-51e9-48be-8c9a-7d02665dc3fa" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[select INCOME from "LOAN_APPLICATION"."PUBLIC"."CUSTOMER_REGISTRATION" where USERID = :userId]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	userId: payload[0].USERID
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<ee:transform doc:name="Transform Message" doc:id="ec2a6a1b-6744-44ab-b84a-102827f7b140">
+			<ee:message>
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	INTEREST: vars."loan-details".INTEREST,
+    LOAN_AMOUNT: vars."loan-details".LOAN_AMOUNT,
+    TYPE: vars."loan-details".TYPE,
+   	USERID: vars."loan-details".USERID,
+    EMAIL: vars."loan-details".EMAIL,
+    TENURE: vars."loan-details".TENURE,
+    LOAN_ID: vars."loan-details".LOAN_ID,
+    INCOME: payload[0].INCOME
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="ad07dca3-c7d7-4bcd-a678-2620d6531e3d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var payload1 = write(payload, "application/json")
+---
+{
+	delaySeconds: 0,
+	body: payload1 
+} as Object {
+	class: "org.mule.extension.sqs.api.model.Message"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3a7b4e9e-fdeb-49c7-8c58-eaa8bd89dded" message="#[payload]"/>
+		<sqs:send-message doc:name="Send message" doc:id="9c339963-5bb8-4834-b3a8-454ec1a40f6a" config-ref="Amazon_SQS_Configuration"/>
+		<logger level="INFO" doc:name="Logger" doc:id="aec3bfef-3936-4548-ba9f-2a095856522d" message="#[payload]"/>
+		<snowflake:insert doc:name="Insert" doc:id="020a96b9-ba19-4fc9-be1e-7c83cc152628" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[insert into "LOAN_APPLICATION"."PUBLIC"."LOAN_STATUS"(LOAN_ID, USERID, STATUS, REASON, AMOUNT) values (:loan_id, :user_id, :status,
+:Reason, :Amount)]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	loan_id: vars."loan-details".LOAN_ID,
+	user_id: vars."loan-details".USERID,
+	status: "Under Process",
+	Reason:"-",
+	Amount: vars."loan-details".LOAN_AMOUNT
+}]]]></snowflake:input-parameters>
+		</snowflake:insert>
+	</flow>
+</mule>

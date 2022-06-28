@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<snowflake:snowflake-config name="Snowflake_Config1" doc:name="Snowflake Config" doc:id="787bbe2a-615a-4b4e-b850-1caacb09ba4e" >
+		<snowflake:snowflake-connection accountName="${secure::db.Account Name}" warehouse="${secure::db.Warehouse}" database="${secure::db.Database}" schema="${secure::db.Schema}" user="${secure::db.User}" password="${secure::db.Password}" role="ACCOUNTADMIN" />
+	</snowflake:snowflake-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="8a78b4fb-f631-4825-9655-d727253116f7" >
+		<http:listener-connection host="localhost" port="8081"/>
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="9bc35dca-d1b8-4a64-ab4d-6d6349ffd5dc" file="sql.properties" />
+	<sqs:config name="Amazon_SQS_Configuration" doc:name="Amazon SQS Configuration" doc:id="9fc4fd52-6e8d-44e4-8f8d-e58e7ac2cd93" defaultQueueUrl="${secure::loan.Queue Url}">
+		<sqs:basic-connection testQueueArn="${secure::loan.arn}" accessKey="${secure::loan.Access Key}" secretKey="${secure::loan.Secret Key}" >
+			<sqs:large-payload-support bucket="large-payload-buket" />
+		</sqs:basic-connection>
+	</sqs:config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="3ff3758c-9f86-4747-9eb1-7bce4c4b7ba4" file="Properties.yaml" key="teamproject" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<secure-properties:config name="main_aws_config" doc:name="Secure Properties Config" doc:id="b9cd28d8-5516-4178-91c4-947e5d620963" file="config_aws.yaml" key="loan" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+</mule>
