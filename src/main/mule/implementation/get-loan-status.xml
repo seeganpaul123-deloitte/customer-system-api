@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+	<flow name="get-loan-status" doc:id="d529c411-c535-4a12-a95d-b149bffced28" >
+		<ee:transform doc:name="Transform Message" doc:id="4c7edb5c-7ca1-4ff8-8669-d5ebcc9d1328" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<snowflake:select doc:name="Select" doc:id="3449a153-e21e-42c6-be2d-1573e27bc074" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[${sql2.query}]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{userid : attributes.uriParams.userId as Number}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<choice doc:name="Choice" doc:id="a47e832e-732d-4f87-8d59-42972cfe76e8" >
+			<when expression="#[payload[0].LOAN_ID == null]">
+				<raise-error doc:name="Raise error" doc:id="a929455c-5649-4ff9-9f2f-d78aa13b256f" type="LOAN_STATUS:NOT_FOUND" description="loan status of the customer is not availabe or the customer is not registered"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="5b9290b2-ab7d-4869-b628-cb93d88a0c20">
+			<ee:message>
+				<ee:set-payload resource="p-loan-status.dwl"></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
