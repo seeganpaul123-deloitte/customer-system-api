@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="customer-system-api--test-suite.xml" />
+	<munit:test name="customer-system-api--test-suite-get:\loan-status\(userId):customer-system-api--configTest" doc:id="733950c6-524a-4ec5-99c4-2d1e5ad2209a" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="36f6e88f-0946-401c-a46f-209dc4c17542" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3449a153-e21e-42c6-be2d-1573e27bc074" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_status/loan_status.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="3b00e83f-b0b3-41f1-898f-9b9e9de2277c" >
+				<munit:attributes value="#[{uriParams:{'userId': 1}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\loan-status\(userId):customer-system-api--config" doc:id="a2807b19-7344-4e2c-91d5-059a3caf50f9" name="get:\loan-status\(userId):customer-system-api--config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="4fcf10e9-fee5-4830-9a53-c084a6442865" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="customer-system-api--test-suite-post:\customer-details:application\json:customer-system-api--configTest" doc:id="ef621b2a-07dc-40bf-a7e4-153758811d1c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="6f052a5c-ff6f-4f41-a11e-7f847de26082" processor="snowflake:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d26799ce-507c-48c0-bb44-1d8884d92034" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('customer_details/insert.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="f82d20e0-b165-4685-82c5-897aff80ac38" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2dcf7093-757d-4a5d-82da-5061611ea356" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('customer_details/select.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="5f94cd32-5c6a-4365-bff1-0474b7dda621" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://customer_details/customer_details.json')] " encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\customer-details:application\json:customer-system-api--config" doc:id="c0f95ac0-387d-4e68-8815-eaa0900e7ce3" name="post:\customer-details:application\json:customer-system-api--config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="30078407-a8eb-4c61-938e-183a25bb81f2" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="customer-system-api--test-suite-get:\loan-status\(userId):customer-system-api--configTest1" doc:id="38d779e0-6158-4908-9b4b-08478f7b5e85" description="Test" expectedErrorType="LOAN_STATUS:NOT_FOUND" expectedErrorDescription="loan status of the customer is not availabe or the customer is not registered">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="8aea27f1-f8b7-4091-892b-4641a652b5f3" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3449a153-e21e-42c6-be2d-1573e27bc074" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_status/fail.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="b1d788ec-7f42-46ec-adfe-203e2a4d7fb4" >
+				<munit:attributes value="#[{uriParams:{userId: 1}}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\loan-status\(userId):customer-system-api--config" doc:id="b2c45559-b39e-4741-b94b-1c8a8001aef2" name="get:\loan-status\(userId):customer-system-api--config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="46b2c9f0-ff91-4792-a435-fb091b30d7a6" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="customer-system-api--test-suite-post:\loan-details:application\json:customer-system-api--configTest" doc:id="ca928141-7772-431f-8359-1828e21cf7bb" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b336d478-3f8f-41a8-bc6e-fa4d9d25b899" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f573ab87-e6d2-43cf-88fb-7f6de721571b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/status.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0c7e51f1-e440-4305-a366-df3689711bf5" processor="snowflake:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9203b4a4-195e-4f2b-b9a4-6320dfaa84c4" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/insert.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e22a81c6-c87f-4f79-9f11-d6b1cc1afe69" processor="sqs:send-message">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9c339963-5bb8-4834-b3a8-454ec1a40f6a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/sendMessage.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a95789d5-fcaa-4eea-8df6-d32eede0ad83" processor="snowflake:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="020a96b9-ba19-4fc9-be1e-7c83cc152628" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/insert.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="9651ac24-327d-4402-9be6-331b14e2da04" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://loan_details/loan_details.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\loan-details:application\json:customer-system-api--config" doc:id="6217caaf-5110-4877-ac48-f2c40763366b" name="post:\loan-details:application\json:customer-system-api--config"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="customer-system-api--test-suite-post:\loan-details:application\json:customer-system-api--configTest1" doc:id="602e9052-4e99-4176-b154-32074cb5d9f5" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="176c51a3-aaf4-41da-8918-c5389f61c698" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c5527093-cf66-4a4c-a00d-11c72cc7be55" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/select.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="4b68d1b3-8fdf-48d2-85c1-7f13e78e9794" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://loan_details/loan_details.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\loan-details:application\json:customer-system-api--config" doc:id="5250e307-e361-4717-b7aa-ec6b92b84220" name="post:\loan-details:application\json:customer-system-api--config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="bd361402-77cb-46fb-9496-70e1fb60216b" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="customer-system-api--test-suite-post:\loan-details:application\json:customer-system-api--configTest2" doc:id="2aa50501-83bb-4382-9489-c69b6325eaed" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="e18c492d-4fb4-4683-af29-a116bf5a98d1" processor="snowflake:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="f573ab87-e6d2-43cf-88fb-7f6de721571b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('loan_details/status_underProcess.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="8ce8f6ec-49a3-4ed0-aca0-71b1c2653d60" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://loan_details/loan_details.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\loan-details:application\json:customer-system-api--config" doc:id="9c246739-e848-4cf6-ac3f-cd713abc6f72" name="post:\loan-details:application\json:customer-system-api--config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a363af44-da5c-43f7-be5c-1f6e25c472af" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

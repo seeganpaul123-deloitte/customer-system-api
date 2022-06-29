@@ -1,0 +1,14 @@
+%dw 2.0
+
+type auto_925f8916_5ac6_426e_b818_645937ac4727_Input_Payload = {
+  Occupation: String, 
+  Email: String, 
+  DOB: String, 
+  Income: Number, 
+  Pancard: String, 
+  last_name: String, 
+  first_name: String, 
+  Password: String, 
+  _?: Any
+}
+
