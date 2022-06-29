@@ -1,0 +1,13 @@
+[
+    {
+        "USERID": 16,
+        "FIRST_NAME": "Preran",
+        "LAST_NAME": "K",
+        "DOB": "20/12/1999",
+        "PANCARD": "XYZ001",
+        "OCCUPATION": "linker",
+        "INCOME":35000,
+        "EMAIL":"preran@gmail.com",
+        "PASSWORD":"preran@123"
+    }
+]

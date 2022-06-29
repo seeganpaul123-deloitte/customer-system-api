@@ -1,0 +1,10 @@
+%dw 2.0
+
+type auto_477e98b4_7540_43e2_8036_8e304c9720d5_Output_Payload = {|
+  MD5OfMessageAttributes?: String, 
+  MD5OfMessageBody?: String, 
+  messageId?: String
+|} {"typeAlias": "SendMessageResult",
+"class": "org.mule.extension.sqs.api.model.SendMessageResult",
+"typeId": "org.mule.extension.sqs.api.model.SendMessageResult"}
+

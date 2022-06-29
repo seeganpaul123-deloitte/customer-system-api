@@ -94,18 +94,18 @@ output application/json
 				</ee:variables>
 			</ee:transform>
 		</on-error-propagate>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a2f5ae64-31e2-47f3-912b-5859a8a7deb8" type="LOAN_STATUS:NOT_FOUND">
-			<ee:transform doc:name="Transform Message" doc:id="0936f746-5a77-4d0b-98f1-ccf6e31d3cf8" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9f3099d3-88a4-43aa-a177-9dd2f6db8707" type="LOAN_STATUS:NOT_FOUND">
+			<ee:transform doc:name="Transform Message" doc:id="0936f746-5a77-4d0b-98f1-ccf6e31d3cf8">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	message: error.description
 }]]></ee:set-payload>
 				</ee:message>
-				<ee:variables >
-					<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 		</on-error-propagate>
