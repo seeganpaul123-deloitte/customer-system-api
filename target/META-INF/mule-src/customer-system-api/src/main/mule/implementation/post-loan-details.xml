@@ -24,35 +24,35 @@ payload]]></ee:set-variable>
 	userId: vars."loan-details".USER_ID
 }]]]></snowflake:input-parameters>
 		</snowflake:select>
-		<ee:transform doc:name="Transform Message" doc:id="8e2f3dc0-24ba-44b4-9da0-591c27d22b99" >
-			<ee:message >
+		<ee:transform doc:name="Transform Message" doc:id="8e2f3dc0-24ba-44b4-9da0-591c27d22b99">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="income" ><![CDATA[%dw 2.0
+			<ee:variables>
+				<ee:set-variable variableName="income"><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<snowflake:select doc:name="Select" doc:id="c5527093-cf66-4a4c-a00d-11c72cc7be55" config-ref="Snowflake_Config1" >
-			<snowflake:sql ><![CDATA[${sql3.query}]]></snowflake:sql>
-			<snowflake:input-parameters ><![CDATA[#[{
+		<snowflake:select doc:name="Select" doc:id="c5527093-cf66-4a4c-a00d-11c72cc7be55" config-ref="Snowflake_Config1">
+			<snowflake:sql><![CDATA[${sql3.query}]]></snowflake:sql>
+			<snowflake:input-parameters><![CDATA[#[{
 	user_id: vars."loan-details".USER_ID
 }]]]></snowflake:input-parameters>
 		</snowflake:select>
-		<choice doc:name="Choice" doc:id="54a17053-aae3-4af5-8e41-34189e0a771d" >
+		<choice doc:name="Choice" doc:id="54a17053-aae3-4af5-8e41-34189e0a771d">
 			<when expression="#[payload[0].USERID != null]">
-				<snowflake:select doc:name="Select" doc:id="f573ab87-e6d2-43cf-88fb-7f6de721571b" config-ref="Snowflake_Config1" >
-					<snowflake:sql ><![CDATA[select STATUS from "LOAN_APPLICATION"."PUBLIC"."LOAN_STATUS" where USERID = :userId order by LOAN_ID desc limit 1]]></snowflake:sql>
-					<snowflake:input-parameters ><![CDATA[#[{
+				<snowflake:select doc:name="Select" doc:id="f573ab87-e6d2-43cf-88fb-7f6de721571b" config-ref="Snowflake_Config1">
+					<snowflake:sql><![CDATA[select STATUS from "LOAN_APPLICATION"."PUBLIC"."LOAN_STATUS" where USERID = :userId order by LOAN_ID desc limit 1]]></snowflake:sql>
+					<snowflake:input-parameters><![CDATA[#[{
 	userId: vars."loan-details".USER_ID
 }]]]></snowflake:input-parameters>
 				</snowflake:select>
 				<choice doc:name="Choice" doc:id="48f03a20-13a9-423a-aea1-291e6e3b4f4f">
 					<when expression='#[payload[0].STATUS == "Under Process"]'>
-						<ee:transform doc:name="Transform Message" doc:id="d270aec2-b6d3-4c93-a33e-3fcb4c695212" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+						<ee:transform doc:name="Transform Message" doc:id="d270aec2-b6d3-4c93-a33e-3fcb4c695212">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -61,7 +61,7 @@ output application/json
 							</ee:message>
 						</ee:transform>
 					</when>
-					<otherwise >
+					<otherwise>
 						<ee:transform doc:name="Transform Message" doc:id="8fa8d16f-53d2-4390-abc1-a5ea4f35fa79">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
@@ -89,12 +89,12 @@ types: payload.Type
 }]]]></snowflake:input-parameters>
 		</snowflake:insert>
 						<flow-ref doc:name="Flow Reference" doc:id="6dea847a-b1f2-41a4-a34c-20cea263c349" name="send-loan-details-queue" />
-						<snowflake:select doc:name="Select" doc:id="fe618fb0-7e1f-4bb2-bea3-7e9a57b3aa3a" config-ref="Snowflake_Config1" >
-							<snowflake:sql ><![CDATA[select * from "LOAN_APPLICATION"."PUBLIC"."LOAN_DETAIL"
+						<snowflake:select doc:name="Select" doc:id="fe618fb0-7e1f-4bb2-bea3-7e9a57b3aa3a" config-ref="Snowflake_Config1">
+							<snowflake:sql><![CDATA[select * from "LOAN_APPLICATION"."PUBLIC"."LOAN_DETAIL"
 order by LOAN_ID desc
 limit 1]]></snowflake:sql>
 						</snowflake:select>
-						<logger level="INFO" doc:name="Logger" doc:id="96b74308-2094-44c9-9347-8f3f3a1a6ea9" message="#[payload[0].LOAN_ID]"/>
+						<logger level="INFO" doc:name="Logger" doc:id="96b74308-2094-44c9-9347-8f3f3a1a6ea9" message="#[payload[0].LOAN_ID]" />
 						<ee:transform doc:name="Transform Message" doc:id="4b7743b3-06e2-451c-9636-4242f5bc3c00">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -109,20 +109,8 @@ output application/json
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="9701b780-2de4-422a-bd75-adfcd5fb2c7f" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": "user is not registered"
-}]]></ee:set-payload>
-					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
-					</ee:variables>
-				</ee:transform>
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="4c2da262-bd87-43c1-958a-d4db73bb6be5" type="CUSTOMER:NOT_FOUND" description="The customer is not registered"/>
 			</otherwise>
 		</choice>
 	</flow>

@@ -47,6 +47,14 @@
 					<munit-tools:payload value="#[MunitTools::getResourceAsString('customer_details/select.json')]" mediaType="application/json" encoding="UTF-8" />
 				</munit-tools:then-return>
 			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="721868fd-673e-4eac-99c1-2993af687c01" processor="snowflake:insert" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="19d644d4-7d81-43ce-8674-13597ff322aa" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('customer_details/insert.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
 		</munit:behavior>
 		<munit:execution >
 			<munit:set-event doc:name="Set Event" doc:id="5f94cd32-5c6a-4365-bff1-0474b7dda621" >
@@ -121,7 +129,7 @@
 			<flow-ref doc:name="Flow-ref to post:\loan-details:application\json:customer-system-api--config" doc:id="6217caaf-5110-4877-ac48-f2c40763366b" name="post:\loan-details:application\json:customer-system-api--config"/>
 		</munit:execution>
 	</munit:test>
-	<munit:test name="customer-system-api--test-suite-post:\loan-details:application\json:customer-system-api--configTest1" doc:id="602e9052-4e99-4176-b154-32074cb5d9f5" description="Test">
+	<munit:test name="customer-system-api--test-suite-post:\loan-details:application\json:customer-system-api--configTest1" doc:id="602e9052-4e99-4176-b154-32074cb5d9f5" description="Test" expectedErrorType="CUSTOMER:NOT_FOUND">
 		<munit:behavior >
 			<munit-tools:mock-when doc:name="Mock when" doc:id="176c51a3-aaf4-41da-8918-c5389f61c698" processor="snowflake:select">
 				<munit-tools:with-attributes >

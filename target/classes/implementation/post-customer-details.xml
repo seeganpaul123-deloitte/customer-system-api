@@ -28,15 +28,37 @@ password: payload.Password
 }]]]></snowflake:input-parameters>
 		</snowflake:insert>
 		<snowflake:select doc:name="Select" doc:id="2dcf7093-757d-4a5d-82da-5061611ea356" config-ref="Snowflake_Config1">
-			<snowflake:sql ><![CDATA[select * from "LOAN_APPLICATION"."PUBLIC"."CUSTOMER_REGISTRATION" order by USERID desc limit 1]]></snowflake:sql>
+			<snowflake:sql ><![CDATA[${sql4.query}]]></snowflake:sql>
 		</snowflake:select>
+		<ee:transform doc:name="Transform Message" doc:id="ef16feeb-6bf9-42f7-ab6c-a90059a5d8fc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="customer" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<snowflake:insert doc:name="Insert" doc:id="19d644d4-7d81-43ce-8674-13597ff322aa" config-ref="Snowflake_Config1">
+			<snowflake:sql ><![CDATA[${sql5.query}]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	userId: payload[0].USERID,
+	pancard: payload[0].PANCARD,
+	score: randomInt(1000)
+}]]]></snowflake:input-parameters>
+		</snowflake:insert>
 		<ee:transform doc:name="Transform Message" doc:id="3e03681f-4203-409c-8edc-9a06e2aaab61" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	user_id: payload[0].USERID,
+	user_id: vars.customer[0].USERID,
 	message: "Customer details updated"
 }]]></ee:set-payload>
 			</ee:message>
